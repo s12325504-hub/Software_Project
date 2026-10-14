@@ -172,4 +172,31 @@ public class DriverServiceTest {
                 assignedDriver,
                 order.getAssignedDriver());
     }
+
+    @Test
+    public void testNoEligibleDriverRejected() {
+
+        DriverRepository driverRepository =
+                new DriverRepository();
+
+        DriverService driverService =
+                new DriverService(
+                        driverRepository,
+                        new NearestDriverStrategy());
+
+        Order order =
+                new Order(
+                        "o5",
+                        "c1",
+                        "r1",
+                        null,
+                        BigDecimal.ZERO);
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> driverService.assignDriver(
+                        order,
+                        30.0,
+                        1));
+    }
 }

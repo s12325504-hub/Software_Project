@@ -5,6 +5,7 @@ import domain.OrderItem;
 import domain.Restaurant;
 import observer.CustomerNotificationObserver;
 import observer.DriverNotificationObserver;
+import observer.RestaurantNotificationObserver;
 import repository.OrderRepository;
 import repository.RestaurantRepository;
 
@@ -122,6 +123,9 @@ public class OrderService {
 
         newOrder.addObserver(
                 new DriverNotificationObserver(notificationService));
+
+        newOrder.addObserver(
+                new RestaurantNotificationObserver(notificationService));
 
         return orderRepository.save(newOrder);
     }
