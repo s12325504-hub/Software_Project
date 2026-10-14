@@ -1,0 +1,32 @@
+package domain;
+
+public class ElectricVehicleDriver extends Driver {
+
+    private double batteryRange;
+
+    public ElectricVehicleDriver(
+            String id,
+            String name,
+            boolean available,
+            double distance,
+            double speed,
+            double batteryRange) {
+
+        super(
+                id,
+                name,
+                available,
+                distance,
+                speed);
+
+        this.batteryRange = batteryRange;
+    }
+
+    public double getBatteryRange() {
+        return batteryRange;
+    }
+
+    public boolean canDeliver(double deliveryDistance) {
+        return deliveryDistance <= batteryRange;
+    }
+}
