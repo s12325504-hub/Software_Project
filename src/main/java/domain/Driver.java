@@ -9,13 +9,21 @@ public class Driver {
     private double distance;
     private double speed;
 
-    public Driver(String id, String name, boolean available, double distance, double speed) {
+    public Driver(
+            String id,
+            String name,
+            boolean available,
+            double distance,
+            double speed) {
+
         this.id = id;
         this.name = name;
         this.available = available;
         this.distance = distance;
         this.speed = speed;
-        this.status = available ? "AVAILABLE" : "BUSY";
+
+        this.status =
+                available ? "AVAILABLE" : "BUSY";
     }
 
     public String getId() {
@@ -48,5 +56,12 @@ public class Driver {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public boolean canDeliver(
+            double deliveryDistance,
+            int orderSize) {
+
+        return true;
     }
 }

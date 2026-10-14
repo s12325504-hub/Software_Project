@@ -1,11 +1,14 @@
 package domain;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
+
+import service.DateTimeService;
 
 public class OrderTypeTest {
 
@@ -51,8 +54,27 @@ public class OrderTypeTest {
     @Test
     public void testScheduledOrderWithFutureTime() {
 
+        LocalDateTime currentTime =
+                LocalDateTime.of(
+                        2026,
+                        10,
+                        15,
+                        10,
+                        0);
+
         LocalDateTime futureTime =
-                LocalDateTime.now().plusHours(2);
+                LocalDateTime.of(
+                        2026,
+                        10,
+                        15,
+                        12,
+                        0);
+
+        DateTimeService dateTimeService =
+                mock(DateTimeService.class);
+
+        when(dateTimeService.now())
+                .thenReturn(currentTime);
 
         ScheduledOrder order =
                 new ScheduledOrder(
@@ -61,18 +83,41 @@ public class OrderTypeTest {
                         "r1",
                         null,
                         new BigDecimal("40.00"),
-                        futureTime);
+                        futureTime,
+                        dateTimeService);
 
         assertEquals(
                 futureTime,
                 order.getScheduledDeliveryTime());
+
+        verify(dateTimeService, times(1))
+                .now();
     }
 
     @Test
     public void testScheduledOrderWithPastTimeRejected() {
 
+        LocalDateTime currentTime =
+                LocalDateTime.of(
+                        2026,
+                        10,
+                        15,
+                        10,
+                        0);
+
         LocalDateTime pastTime =
-                LocalDateTime.now().minusHours(2);
+                LocalDateTime.of(
+                        2026,
+                        10,
+                        15,
+                        8,
+                        0);
+
+        DateTimeService dateTimeService =
+                mock(DateTimeService.class);
+
+        when(dateTimeService.now())
+                .thenReturn(currentTime);
 
         assertThrows(
                 IllegalArgumentException.class,
@@ -82,6 +127,10 @@ public class OrderTypeTest {
                         "r1",
                         null,
                         new BigDecimal("40.00"),
-                        pastTime));
+                        pastTime,
+                        dateTimeService));
+
+        verify(dateTimeService, times(1))
+                .now();
     }
 }

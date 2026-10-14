@@ -2,6 +2,8 @@ package service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
 
 import domain.Driver;
@@ -29,7 +31,7 @@ public class DriverServiceTest {
                         "c1",
                         "r1",
                         null,
-                        java.math.BigDecimal.ZERO);
+                        BigDecimal.ZERO);
 
         Driver assignedDriver =
                 driverService.assignDriver(order);
@@ -69,7 +71,7 @@ public class DriverServiceTest {
                         "c1",
                         "r1",
                         null,
-                        java.math.BigDecimal.ZERO);
+                        BigDecimal.ZERO);
 
         Driver assignedDriver =
                 driverService.assignDriver(order);
@@ -109,7 +111,7 @@ public class DriverServiceTest {
                         "c1",
                         "r1",
                         null,
-                        java.math.BigDecimal.ZERO);
+                        BigDecimal.ZERO);
 
         Order secondOrder =
                 new Order(
@@ -117,7 +119,7 @@ public class DriverServiceTest {
                         "c2",
                         "r1",
                         null,
-                        java.math.BigDecimal.ZERO);
+                        BigDecimal.ZERO);
 
         Order thirdOrder =
                 new Order(
@@ -125,7 +127,7 @@ public class DriverServiceTest {
                         "c3",
                         "r1",
                         null,
-                        java.math.BigDecimal.ZERO);
+                        BigDecimal.ZERO);
 
         driverService.assignDriver(firstOrder);
         driverService.assignDriver(secondOrder);
@@ -133,5 +135,41 @@ public class DriverServiceTest {
         assertThrows(
                 IllegalStateException.class,
                 () -> driverService.assignDriver(thirdOrder));
+    }
+
+    @Test
+    public void testDriverTypeRuleUsedDuringAssignment() {
+
+        DriverRepository driverRepository =
+                new DriverRepository();
+
+        DriverService driverService =
+                new DriverService(
+                        driverRepository,
+                        new NearestDriverStrategy());
+
+        Order order =
+                new Order(
+                        "o4",
+                        "c1",
+                        "r1",
+                        null,
+                        BigDecimal.ZERO);
+
+        Driver assignedDriver =
+                driverService.assignDriver(
+                        order,
+                        10.0,
+                        1);
+
+        assertNotNull(assignedDriver);
+
+        assertEquals(
+                "Omar",
+                assignedDriver.getName());
+
+        assertEquals(
+                assignedDriver,
+                order.getAssignedDriver());
     }
 }

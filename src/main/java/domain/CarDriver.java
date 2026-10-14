@@ -26,7 +26,11 @@ public class CarDriver extends Driver {
         return maxOrderSize;
     }
 
-    public boolean canDeliver(int orderSize) {
+    @Override
+    public boolean canDeliver(
+            double deliveryDistance,
+            int orderSize) {
+
         return orderSize <= maxOrderSize;
     }
 }

@@ -26,7 +26,11 @@ public class BicycleDriver extends Driver {
         return maxDeliveryDistance;
     }
 
-    public boolean canDeliver(double deliveryDistance) {
+    @Override
+    public boolean canDeliver(
+            double deliveryDistance,
+            int orderSize) {
+
         return deliveryDistance <= maxDeliveryDistance;
     }
 }

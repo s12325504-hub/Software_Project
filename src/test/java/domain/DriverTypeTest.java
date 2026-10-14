@@ -18,8 +18,8 @@ public class DriverTypeTest {
                         20.0,
                         5.0);
 
-        assertTrue(driver.canDeliver(4.0));
-        assertFalse(driver.canDeliver(6.0));
+        assertTrue(driver.canDeliver(4.0, 1));
+        assertFalse(driver.canDeliver(6.0, 1));
     }
 
     @Test
@@ -34,8 +34,8 @@ public class DriverTypeTest {
                         50.0,
                         20.0);
 
-        assertTrue(driver.canDeliver(15.0));
-        assertFalse(driver.canDeliver(25.0));
+        assertTrue(driver.canDeliver(15.0, 1));
+        assertFalse(driver.canDeliver(25.0, 1));
     }
 
     @Test
@@ -50,8 +50,8 @@ public class DriverTypeTest {
                         60.0,
                         10);
 
-        assertTrue(driver.canDeliver(8));
-        assertFalse(driver.canDeliver(12));
+        assertTrue(driver.canDeliver(5.0, 8));
+        assertFalse(driver.canDeliver(5.0, 12));
     }
 
     @Test
@@ -66,7 +66,7 @@ public class DriverTypeTest {
                         55.0,
                         30.0);
 
-        assertTrue(driver.canDeliver(25.0));
-        assertFalse(driver.canDeliver(35.0));
+        assertTrue(driver.canDeliver(25.0, 1));
+        assertFalse(driver.canDeliver(35.0, 1));
     }
 }

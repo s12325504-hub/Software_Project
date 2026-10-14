@@ -1,5 +1,6 @@
 package service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import domain.Driver;
@@ -22,8 +23,9 @@ public class DriverService {
      * @param driverRepository repository that stores drivers
      * @param selectionStrategy strategy used to select a driver
      */
-    public DriverService(DriverRepository driverRepository,
-                         DriverSelectionStrategy selectionStrategy) {
+    public DriverService(
+            DriverRepository driverRepository,
+            DriverSelectionStrategy selectionStrategy) {
 
         this.driverRepository = driverRepository;
         this.selectionStrategy = selectionStrategy;
@@ -40,17 +42,71 @@ public class DriverService {
     public Driver assignDriver(Order order) {
 
         if (order == null) {
-            throw new IllegalArgumentException("Order cannot be null");
+            throw new IllegalArgumentException(
+                    "Order cannot be null");
         }
 
         List<Driver> availableDrivers =
                 driverRepository.findAvailableDrivers();
 
         Driver selectedDriver =
-                selectionStrategy.selectDriver(availableDrivers);
+                selectionStrategy.selectDriver(
+                        availableDrivers);
 
         if (selectedDriver == null) {
-            throw new IllegalStateException("No available driver");
+            throw new IllegalStateException(
+                    "No available driver");
+        }
+
+        selectedDriver.setAvailable(false);
+        selectedDriver.setStatus("BUSY");
+
+        order.setAssignedDriver(selectedDriver);
+
+        return selectedDriver;
+    }
+
+    /**
+     * Assigns an eligible driver according to driver type rules.
+     *
+     * @param order the order that needs a driver
+     * @param deliveryDistance delivery distance
+     * @param orderSize number of items in the order
+     * @return the selected eligible driver
+     */
+    public Driver assignDriver(
+            Order order,
+            double deliveryDistance,
+            int orderSize) {
+
+        if (order == null) {
+            throw new IllegalArgumentException(
+                    "Order cannot be null");
+        }
+
+        List<Driver> availableDrivers =
+                driverRepository.findAvailableDrivers();
+
+        List<Driver> eligibleDrivers =
+                new ArrayList<>();
+
+        for (Driver driver : availableDrivers) {
+
+            if (driver.canDeliver(
+                    deliveryDistance,
+                    orderSize)) {
+
+                eligibleDrivers.add(driver);
+            }
+        }
+
+        Driver selectedDriver =
+                selectionStrategy.selectDriver(
+                        eligibleDrivers);
+
+        if (selectedDriver == null) {
+            throw new IllegalStateException(
+                    "No eligible driver available");
         }
 
         selectedDriver.setAvailable(false);
@@ -69,6 +125,7 @@ public class DriverService {
     public void setSelectionStrategy(
             DriverSelectionStrategy selectionStrategy) {
 
-        this.selectionStrategy = selectionStrategy;
+        this.selectionStrategy =
+                selectionStrategy;
     }
 }

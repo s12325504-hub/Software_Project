@@ -26,7 +26,11 @@ public class ElectricVehicleDriver extends Driver {
         return batteryRange;
     }
 
-    public boolean canDeliver(double deliveryDistance) {
+    @Override
+    public boolean canDeliver(
+            double deliveryDistance,
+            int orderSize) {
+
         return deliveryDistance <= batteryRange;
     }
 }
