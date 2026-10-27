@@ -108,4 +108,29 @@ public class PricingServiceTest {
                 new BigDecimal("45.00"),
                 result);
     }
+
+    // ==========================================
+    // الاختبارات المضافة لتغطية 100% من PricingService
+    // ==========================================
+
+    @Test
+    public void testApplyPricingNullOrderThrowsException() {
+        PricingService pricingService = new PricingService(new NormalPricingStrategy());
+        
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> pricingService.applyPricing(null));
+    }
+
+    @Test
+    public void testSetPricingStrategy() {
+        Order order = new Order("o5", "c1", "r1", null, new BigDecimal("40.00"));
+        PricingService pricingService = new PricingService(new NormalPricingStrategy());
+
+        // تغيير الاستراتيجية ديناميكياً لتغطية دالة setPricingStrategy
+        pricingService.setPricingStrategy(new ExpressDeliveryPricingStrategy(new BigDecimal("10.00")));
+        BigDecimal result = pricingService.applyPricing(order);
+
+        assertEquals(new BigDecimal("50.00"), result);
+    }
 }

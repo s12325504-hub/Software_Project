@@ -6,6 +6,11 @@ public class DeliveryCostService {
 
     // دالة حساب رسوم التوصيل الأساسية بناءً على المسافة (المسافة * 2 شيكل)
     public BigDecimal calculateDeliveryCost(double distance) {
+        // الشرط المفقود الذي يمنع المسافات السالبة ويرمي الاستثناء المطلوب
+        if (distance < 0) {
+            throw new IllegalArgumentException("Distance cannot be negative");
+        }
+        
         return BigDecimal.valueOf(distance * 2.0);
     }
 
