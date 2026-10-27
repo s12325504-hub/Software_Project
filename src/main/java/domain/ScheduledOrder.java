@@ -28,6 +28,22 @@ public class ScheduledOrder extends Order {
                 scheduledDeliveryTime,
                 new SystemDateTimeService());
     }
+    public ScheduledOrder(
+            String id,
+            String customerId,
+            String restaurantId,
+            List<OrderItem> items,
+            BigDecimal totalPrice) {
+
+        this(
+                id,
+                customerId,
+                restaurantId,
+                items,
+                totalPrice,
+                LocalDateTime.now().plusHours(2), // وقت افتراضي مستقبلي
+                new SystemDateTimeService());
+    }
 
     public ScheduledOrder(
             String id,

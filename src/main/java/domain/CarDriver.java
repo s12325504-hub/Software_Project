@@ -33,4 +33,8 @@ public class CarDriver extends Driver {
 
         return orderSize <= maxOrderSize;
     }
+    @Override
+    public String getDriverType() {
+        return "MotorcycleDriver (دراجة نارية)";
+    }
 }

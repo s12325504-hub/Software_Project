@@ -82,4 +82,16 @@ public class DriverRepository {
 
         return null;
     }
+
+    // 🟢 دالة إرجاع جميع السائقين
+    public List<Driver> findAll() {
+        return drivers;
+    }
+
+    // 🟢 دالة إضافة سائق جديد لقائمة السائقين
+    public void save(Driver driver) {
+        if (driver != null) {
+            drivers.add(driver);
+        }
+    }
 }

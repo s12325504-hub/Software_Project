@@ -33,4 +33,8 @@ public class BicycleDriver extends Driver {
 
         return deliveryDistance <= maxDeliveryDistance;
     }
+    @Override
+    public String getDriverType() {
+        return "MotorcycleDriver (دراجة نارية)";
+    }
 }

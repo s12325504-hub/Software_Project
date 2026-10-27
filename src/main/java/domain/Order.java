@@ -7,7 +7,7 @@ import java.util.List;
 import observer.OrderObserver;
 
 public class Order {
-
+ 
     private String id;
     private String customerId;
     private String restaurantId;
@@ -40,6 +40,11 @@ public class Order {
 
     public String getId() {
         return id;
+    }
+
+    // 🟢 الدالة المضافة لإعادة قائمة الوجبات حل مشكلة getItems()
+    public List<OrderItem> getItems() {
+        return items;
     }
 
     public BigDecimal getTotalPrice() {
@@ -93,6 +98,14 @@ public class Order {
 
     public String getLastEvent() {
         return lastEvent;
+    }
+    
+    public String getUserId() {
+        return customerId;
+    }
+
+    public String getCustomerId() {
+        return customerId;
     }
 
     public void addObserver(OrderObserver observer) {

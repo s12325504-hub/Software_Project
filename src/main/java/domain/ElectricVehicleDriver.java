@@ -33,4 +33,9 @@ public class ElectricVehicleDriver extends Driver {
 
         return deliveryDistance <= batteryRange;
     }
+
+    @Override
+    public String getDriverType() {
+        return "ElectricVehicleDriver (مركبة كهربائية)";
+    }
 }

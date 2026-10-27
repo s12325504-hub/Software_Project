@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 import org.junit.jupiter.api.Test;
 
+import domain.BicycleDriver; // 🟢 استيراد الكلاس الفرعي
 import domain.Driver;
 import domain.Order;
 import service.NotificationService;
@@ -29,13 +30,15 @@ public class DriverNotificationObserverTest {
                         null,
                         BigDecimal.ZERO);
 
+        // 🟢 التعديل هنا: استخدام BicycleDriver بدلاً من new Driver التجريدي
         Driver driver =
-                new Driver(
+                new BicycleDriver(
                         "d1",
                         "Ahmad",
                         true,
                         3.0,
-                        40.0);
+                        40.0,
+                        5.0);
 
         order.setAssignedDriver(driver);
 

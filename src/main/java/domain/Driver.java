@@ -1,6 +1,6 @@
 package domain;
 
-public class Driver {
+public abstract class Driver {
 
     private String id;
     private String name;
@@ -58,10 +58,11 @@ public class Driver {
         this.status = status;
     }
 
-    public boolean canDeliver(
+    // دالة تجريدية لفحص إمكانية التوصيل في الكلاسات الفرعية (US5.4)
+    public abstract boolean canDeliver(
             double deliveryDistance,
-            int orderSize) {
+            int orderSize);
 
-        return true;
-    }
+    // 🟢 الدالة الجديدة لحل خطأ override في الكلاسات الفرعية
+    public abstract String getDriverType();
 }

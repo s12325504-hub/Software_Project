@@ -10,7 +10,9 @@ public class OrderRepository {
 
     // حفظ الطلب
     public Order save(Order order) {
-        orders.add(order);
+        if (order != null) {
+            orders.add(order);
+        }
         return order;
     }
 
@@ -22,16 +24,19 @@ public class OrderRepository {
     // البحث عن طلب حسب الـ ID
     public Order findById(String id) {
 
-        if (id == null) {
+        if (id == null || id.trim().isEmpty()) {
             return null;
         }
 
+        // تنظيف النص المدخل من أي مسافات زائدة في البداية أو النهاية
+        String cleanId = id.trim();
+
         for (Order order : orders) {
-            if (order.getId().equals(id)) {
+            if (order.getId() != null && order.getId().trim().equalsIgnoreCase(cleanId)) {
                 return order;
             }
         }
 
         return null;
-    }
+            }
 }

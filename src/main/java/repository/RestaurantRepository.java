@@ -3,6 +3,7 @@ package repository;
 import domain.Restaurant;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class RestaurantRepository {
@@ -10,15 +11,15 @@ public class RestaurantRepository {
 
     public RestaurantRepository() {
         // تمرير كافة المقاييس المطلوبة لسياسات التوصيل (US2.3)
-        restaurants.add(new Restaurant("1", "Pizza House", true, new BigDecimal("15.00"), "Nablus Center"));
-        restaurants.add(new Restaurant("2", "Burger King", false, new BigDecimal("20.00"), "Rafidia"));
-        restaurants.add(new Restaurant("3", "Shawarma Express", true, new BigDecimal("10.00"), "Nablus Center"));
+        restaurants.add(new Restaurant("1", "Pizza Time", true, new BigDecimal("15.00"), Arrays.asList("Nablus", "Rafidia", "Asira", "Old City")));
+        restaurants.add(new Restaurant("2", "Orgada Burger", false, new BigDecimal("20.00"), Arrays.asList("Rafidia")));
+        restaurants.add(new Restaurant("3", "Shawarman", true, new BigDecimal("10.00"), Arrays.asList("Nablus")));
     }
 
     // دالة جلب المطاعم المفتوحة (باستخدام for-each loop)
     public List<Restaurant> findByIsOpenTrue() {
         List<Restaurant> openRestaurants = new ArrayList<>();
-        
+         
         for (Restaurant restaurant : restaurants) {
             if (restaurant.isOpen()) {
                 openRestaurants.add(restaurant);

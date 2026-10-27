@@ -1,8 +1,10 @@
 package service;
 
+import domain.ExpressOrder;
 import domain.Order;
 import domain.OrderItem;
 import domain.Restaurant;
+import domain.ScheduledOrder;
 import observer.CustomerNotificationObserver;
 import observer.DriverNotificationObserver;
 import observer.RestaurantNotificationObserver;
@@ -10,6 +12,7 @@ import repository.OrderRepository;
 import repository.RestaurantRepository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,10 +55,32 @@ public class OrderService {
         this.deliveryCostService = deliveryCostService;
     }
 
+    // الدالة القديمة لتبقى شغالة بدون مشاكل
     public Order placeOrder(String customerId,
                             String restaurantId,
                             String deliveryAddress,
                             List<OrderItem> items) {
+
+        return placeOrder(customerId, restaurantId, deliveryAddress, items, "1", null);
+    }
+
+    // دالة placeOrder الداعمة للنوع بدون تمرير وقت مجدول صراحة
+    public Order placeOrder(String customerId,
+                            String restaurantId,
+                            String deliveryAddress,
+                            List<OrderItem> items,
+                            String orderType) {
+
+        return placeOrder(customerId, restaurantId, deliveryAddress, items, orderType, null);
+    }
+
+    // --- التعديل الإضافي: دالة placeOrder تدعم نوع الطلب والوقت المجدول (Scheduled Time) ---
+    public Order placeOrder(String customerId,
+                            String restaurantId,
+                            String deliveryAddress,
+                            List<OrderItem> items,
+                            String orderType,
+                            LocalDateTime scheduledTime) {
 
         if (deliveryAddress == null || deliveryAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("Invalid delivery address");
@@ -110,13 +135,43 @@ public class OrderService {
 
         String orderId = UUID.randomUUID().toString();
 
-        Order newOrder = new Order(
-                orderId,
-                customerId,
-                restaurantId,
-                items,
-                totalAmount
-        );
+        Order newOrder;
+        String type = (orderType != null) ? orderType.trim() : "1";
+
+        // إنشاء الكائن حسب الخيار الذي تم اختياره في الكونسول (1 = Standard, 2 = Express, 3 = Scheduled)
+        if ("2".equals(type) || "EXPRESS".equalsIgnoreCase(type)) {
+            newOrder = new ExpressOrder(
+                    orderId,
+                    customerId,
+                    restaurantId,
+                    items,
+                    totalAmount,
+                    new BigDecimal("5.00") // رسوم Express الإضافية
+            );
+        } else if ("3".equals(type) || "SCHEDULED".equalsIgnoreCase(type)) {
+            LocalDateTime deliveryTime = (scheduledTime != null) ? scheduledTime : LocalDateTime.now().plusHours(2);
+            newOrder = new ScheduledOrder(
+                    orderId,
+                    customerId,
+                    restaurantId,
+                    items,
+                    totalAmount,
+                    deliveryTime
+            );
+        } else {
+            newOrder = new Order(
+                    orderId,
+                    customerId,
+                    restaurantId,
+                    items,
+                    totalAmount
+            );
+        }
+
+        // --- التعديل: احتساب التوصيل بناءً على اسم المنطقة المدخلة مباشرة ---
+        BigDecimal deliveryFee = deliveryCostService.calculateDeliveryCostByAddress(deliveryAddress);
+        newOrder.setDeliveryFee(deliveryFee);
+        // -----------------------------------------------------------------
 
         newOrder.addObserver(
                 new CustomerNotificationObserver(notificationService));
