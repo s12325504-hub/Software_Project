@@ -8,9 +8,10 @@ public class userRepository {
     private List<user> users = new ArrayList<>();
 
     public userRepository() {
-        user customer = new user("tala", "tala12345", "customer");
+        // إضافة الإيميل لكل مستخدم
+        user customer = new user("tala", "tala12345", "customer", "talasaadeh775@gmail.com");
         users.add(customer);
-        user manager = new user("reem", "reem12345", "manager");
+        user manager = new user("reem", "reem12345", "manager", "reem@example.com");
         users.add(manager);
     }
 

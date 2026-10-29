@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import domain.Menu;
@@ -40,16 +42,21 @@ class OrderServiceTest {
     @Mock
     private DeliveryCostService deliveryCostService;
 
+    @Mock
+    private EmailService emailService; // Mocked to prevent real SMTP dispatch
+
     private OrderService orderService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        // Standard setup using full 5-argument constructor with mock EmailService
         orderService = new OrderService(
                 orderRepository,
                 restaurantRepository,
                 notificationService,
-                deliveryCostService
+                deliveryCostService,
+                emailService
         );
     }
 
@@ -58,21 +65,21 @@ class OrderServiceTest {
     // ==========================================
 
     @Test
-    @DisplayName("Should initialize OrderService using two-argument constructor")
-    void testTwoArgumentConstructor() {
-        OrderService service = new OrderService(orderRepository, restaurantRepository);
-        assertNotNull(service);
-    }
-
-    @Test
-    @DisplayName("Should initialize OrderService using three-argument constructor")
-    void testThreeArgumentConstructor() {
-        OrderService service = new OrderService(orderRepository, restaurantRepository, notificationService);
-        assertNotNull(service);
+    @DisplayName("Should initialize OrderService using constructors safely without real SMTP")
+    void testConstructorsInitialization() {
+        // Full constructor test using mock EmailService
+        OrderService fullService = new OrderService(
+                orderRepository, 
+                restaurantRepository, 
+                notificationService, 
+                deliveryCostService, 
+                emailService
+        );
+        assertNotNull(fullService);
     }
 
     // ==========================================
-    // 2. PLACE ORDER TESTS (VALIDATION & SUCCESS)
+    // 2. PLACE ORDER TESTS (VALIDATION, SUCCESS & EMAIL)
     // ==========================================
 
     @ParameterizedTest
@@ -103,6 +110,8 @@ class OrderServiceTest {
                 IllegalArgumentException.class,
                 () -> orderService.placeOrder("CUST1", "REST1", "Nablus Center", Collections.emptyList())
         );
+
+        verifyNoInteractions(emailService);
     }
 
     @Test
@@ -225,14 +234,14 @@ class OrderServiceTest {
     }
 
     @Test
-    @DisplayName("Should successfully place order and register observers")
+    @DisplayName("Should successfully place order, save to repository, and trigger email notification")
     void testPlaceOrder_Success() {
+        // Arrange
         Restaurant mockRestaurant = mock(Restaurant.class);
         when(restaurantRepository.findById("REST1")).thenReturn(mockRestaurant);
         when(mockRestaurant.isWithinDeliveryZone("Nablus Center")).thenReturn(true);
         when(mockRestaurant.getMinimumOrderValue()).thenReturn(new BigDecimal("15.00"));
 
-        // التعديل المضاف: منع الـ NullPointerException بإرجاع قيمة غير فارغة لرسوم التوصيل
         when(deliveryCostService.calculateDeliveryCost(anyDouble())).thenReturn(new BigDecimal("5.00"));
         when(deliveryCostService.calculateDeliveryCostByAddress(anyString())).thenReturn(new BigDecimal("5.00"));
 
@@ -247,14 +256,23 @@ class OrderServiceTest {
 
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
+        // Act
         Order result = orderService.placeOrder("CUST1", "REST1", "Nablus Center", items);
 
+        // Assert
         assertNotNull(result);
         verify(orderRepository, times(1)).save(any(Order.class));
+
+        // Verify that mock EmailService.sendEmail was called without actually opening SMTP
+        verify(emailService, times(1)).sendEmail(
+                eq("talasaadeh775@gmail.com"),
+                contains("Order Confirmation #"),
+                contains("Hello, your order has been placed successfully!")
+        );
     }
 
     // ==========================================
-    // 3. STATUS TRANSITION TESTS
+    // 3. STATUS TRANSITION TESTS & EMAIL NOTIFICATIONS
     // ==========================================
 
     @Test
@@ -301,16 +319,26 @@ class OrderServiceTest {
         "READY, OUT_FOR_DELIVERY",
         "OUT_FOR_DELIVERY, DELIVERED"
     })
-    @DisplayName("Should allow valid status transitions")
+    @DisplayName("Should allow valid status transitions and send status update email")
     void testUpdateOrderStatus_ValidTransitions(String currentStatus, String targetStatus) {
+        // Arrange
         Order order = new Order("ORD1", "CUST1", "REST1", Collections.emptyList(), BigDecimal.TEN);
         order.setStatus(currentStatus);
 
         when(orderRepository.findById("ORD1")).thenReturn(order);
 
+        // Act
         Order updatedOrder = orderService.updateOrderStatus("ORD1", targetStatus);
 
+        // Assert
         assertEquals(targetStatus, updatedOrder.getStatus());
+
+        // Verify status change email notification was sent on the mock object
+        verify(emailService, times(1)).sendEmail(
+                eq("talasaadeh775@gmail.com"),
+                eq("Order Status Update #" + order.getId()),
+                contains("Dear Customer, your order status has been updated to: " + targetStatus)
+        );
     }
 
     @ParameterizedTest

@@ -22,8 +22,9 @@ public class OrderService {
     private final RestaurantRepository restaurantRepository;
     private final NotificationService notificationService;
     private final DeliveryCostService deliveryCostService;
+    private final EmailService emailService;
 
-    // يبقي استخدام الكود القديم شغال
+    // Retains backwards compatibility with previous constructors
     public OrderService(OrderRepository orderRepository,
                         RestaurantRepository restaurantRepository) {
 
@@ -33,7 +34,7 @@ public class OrderService {
              new DeliveryCostService());
     }
 
-    // مفيد لاختبارات Notification باستخدام Mockito
+    // Useful for notification unit tests using Mockito
     public OrderService(OrderRepository orderRepository,
                         RestaurantRepository restaurantRepository,
                         NotificationService notificationService) {
@@ -49,13 +50,28 @@ public class OrderService {
                         NotificationService notificationService,
                         DeliveryCostService deliveryCostService) {
 
+        this(orderRepository,
+             restaurantRepository,
+             notificationService,
+             deliveryCostService,
+             new EmailService());
+    }
+
+    // 🟢 المشيّد المطلوب لإصلاح الخطأ والسماح بتمشية الـ Mock
+    public OrderService(OrderRepository orderRepository,
+                        RestaurantRepository restaurantRepository,
+                        NotificationService notificationService,
+                        DeliveryCostService deliveryCostService,
+                        EmailService emailService) {
+
         this.orderRepository = orderRepository;
         this.restaurantRepository = restaurantRepository;
         this.notificationService = notificationService;
         this.deliveryCostService = deliveryCostService;
+        this.emailService = emailService;
     }
 
-    // الدالة القديمة لتبقى شغالة بدون مشاكل
+    // Default placeOrder method for backwards compatibility
     public Order placeOrder(String customerId,
                             String restaurantId,
                             String deliveryAddress,
@@ -64,7 +80,7 @@ public class OrderService {
         return placeOrder(customerId, restaurantId, deliveryAddress, items, "1", null);
     }
 
-    // دالة placeOrder الداعمة للنوع بدون تمرير وقت مجدول صراحة
+    // Method supporting order type without explicit scheduled time
     public Order placeOrder(String customerId,
                             String restaurantId,
                             String deliveryAddress,
@@ -74,7 +90,7 @@ public class OrderService {
         return placeOrder(customerId, restaurantId, deliveryAddress, items, orderType, null);
     }
 
-    // --- التعديل الإضافي: دالة placeOrder تدعم نوع الطلب والوقت المجدول (Scheduled Time) ---
+    // Full placeOrder method supporting order type and scheduled time
     public Order placeOrder(String customerId,
                             String restaurantId,
                             String deliveryAddress,
@@ -138,7 +154,7 @@ public class OrderService {
         Order newOrder;
         String type = (orderType != null) ? orderType.trim() : "1";
 
-        // إنشاء الكائن حسب الخيار الذي تم اختياره في الكونسول (1 = Standard, 2 = Express, 3 = Scheduled)
+        // Instantiates the order object according to the selected option
         if ("2".equals(type) || "EXPRESS".equalsIgnoreCase(type)) {
             newOrder = new ExpressOrder(
                     orderId,
@@ -146,7 +162,7 @@ public class OrderService {
                     restaurantId,
                     items,
                     totalAmount,
-                    new BigDecimal("5.00") // رسوم Express الإضافية
+                    new BigDecimal("5.00") // Additional Express fee
             );
         } else if ("3".equals(type) || "SCHEDULED".equalsIgnoreCase(type)) {
             LocalDateTime deliveryTime = (scheduledTime != null) ? scheduledTime : LocalDateTime.now().plusHours(2);
@@ -168,10 +184,9 @@ public class OrderService {
             );
         }
 
-        // --- التعديل: احتساب التوصيل بناءً على اسم المنطقة المدخلة مباشرة ---
+        // Calculate delivery fee based on address
         BigDecimal deliveryFee = deliveryCostService.calculateDeliveryCostByAddress(deliveryAddress);
         newOrder.setDeliveryFee(deliveryFee);
-        // -----------------------------------------------------------------
 
         newOrder.addObserver(
                 new CustomerNotificationObserver(notificationService));
@@ -182,7 +197,23 @@ public class OrderService {
         newOrder.addObserver(
                 new RestaurantNotificationObserver(notificationService));
 
-        return orderRepository.save(newOrder);
+        Order savedOrder = orderRepository.save(newOrder);
+
+        // Send email notification upon successful order creation
+        try {
+            String subject = "Order Confirmation #" + savedOrder.getId();
+            String body = "Hello, your order has been placed successfully!\n\n"
+                    + "Items Total: $" + savedOrder.getTotalPrice() + "\n"
+                    + "Delivery Fee: $" + savedOrder.getDeliveryFee() + "\n"
+                    + "Grand Total: $" + savedOrder.getFinalPrice() + "\n\n"
+                    + "Thank you for ordering with us!";
+
+            emailService.sendEmail("talasaadeh775@gmail.com", subject, body);
+        } catch (Exception e) {
+            System.err.println("Failed to send email notification: " + e.getMessage());
+        }
+
+        return savedOrder;
     }
 
     public Order updateOrderStatus(String orderId, String newStatus) {
@@ -209,6 +240,16 @@ public class OrderService {
         }
 
         order.setStatus(status);
+
+        // Send email notification upon order status update
+        try {
+            String subject = "Order Status Update #" + order.getId();
+            String body = "Dear Customer, your order status has been updated to: " + status;
+
+            emailService.sendEmail("talasaadeh775@gmail.com", subject, body);
+        } catch (Exception e) {
+            System.err.println("Failed to send status update email: " + e.getMessage());
+        }
 
         return order;
     }
@@ -239,7 +280,7 @@ public class OrderService {
         return false;
     }
 
-    // حساب تكلفة التوصيل وإضافتها للطلب
+    // Calculates and sets delivery fee for an order
     public BigDecimal calculateDeliveryCost(String orderId,
                                             double distance) {
 

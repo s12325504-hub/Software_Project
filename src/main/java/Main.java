@@ -2,7 +2,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
-// استيراد كافة الحزم والملفات بناءً على مشروعك
+// Import all required packages based on project structure
 import domain.*;
 import observer.*;
 import repository.*;
@@ -26,16 +26,16 @@ public class Main {
     private static MenuService menuService = new MenuService(menuRepo);
     private static OrderService orderService = new OrderService(orderRepo, restaurantRepo, notificationService);
     
-    // DriverService مع NearestDriverStrategy افتراضياً
+    // DriverService with default NearestDriverStrategy
     private static DriverService driverService = new DriverService(driverRepo, new NearestDriverStrategy());
     
-    // PricingService مع NormalPricingStrategy افتراضياً
+    // PricingService with default NormalPricingStrategy
     private static PricingService pricingService = new PricingService(new NormalPricingStrategy());
     
     // PaymentService
     private static PaymentService paymentService = new PaymentService();
 
-    // حفظ كائن المستخدم الحالي (null للزائر)
+    // Store active user object (null for Guest)
     private static user currentUser = null;
 
     public static void main(String[] args) {
@@ -46,12 +46,12 @@ public class Main {
         boolean exit = false;
         while (!exit) {
             printDynamicMenu();
-            System.out.print("اختر رقم الخيار: ");
+            System.out.print("Select an option: ");
             String input = scanner.nextLine().trim();
 
             if (currentUser == null) {
                 // ==========================================
-                // 1. خيارات الزائر (Guest Options)
+                // 1. Guest Options
                 // ==========================================
                 switch (input) {
                     case "1": 
@@ -62,14 +62,14 @@ public class Main {
                         break;
                     case "0":
                         exit = true;
-                        System.out.println("\nتم الخروج من النظام بنجاح. شكراً لك!");
+                        System.out.println("\nExited system successfully. Thank you!");
                         break;
                     default: 
-                        System.out.println("⚠️ خيار غير صحيح! يرجى تسجيل الدخول أولاً للوصول لخدمات النظام.");
+                        System.out.println("⚠️ Invalid option! Please log in first to access full system services.");
                 }
             } else if (isAdminOrManager(currentUser)) {
                 // ==========================================
-                // 2. خيارات المدير / المشرف (Admin & Manager Options)
+                // 2. Admin & Manager Options
                 // ==========================================
                 switch (input) {
                     case "1": 
@@ -89,14 +89,14 @@ public class Main {
                         break;
                     case "0":
                         exit = true;
-                        System.out.println("\nتم الخروج من النظام بنجاح. شكراً لك!");
+                        System.out.println("\nExited system successfully. Thank you!");
                         break;
                     default: 
-                        System.out.println("⚠️ خيار غير صحيح لمدير النظام!");
+                        System.out.println("⚠️ Invalid option for Admin/Manager!");
                 }
             } else {
                 // ==========================================
-                // 3. خيارات الزبون (Customer Role Options)
+                // 3. Customer Role Options
                 // ==========================================
                 switch (input) {
                     case "1": 
@@ -106,7 +106,7 @@ public class Main {
                         handlePlaceOrder(); 
                         break;
                     case "3": 
-                        handleViewOrderDetails(); // الخيار المضاف لاستعلام حالة الطلب
+                        handleViewOrderDetails();
                         break;
                     case "4": 
                         handleProcessPayment(); 
@@ -119,48 +119,48 @@ public class Main {
                         break;
                     case "0":
                         exit = true;
-                        System.out.println("\nتم الخروج من النظام بنجاح. شكراً لك!");
+                        System.out.println("\nExited system successfully. Thank you!");
                         break;
                     default: 
-                        System.out.println("⚠️ خيار غير صحيح للزبون!");
+                        System.out.println("⚠️ Invalid option for Customer!");
                 }
             }
         }
         scanner.close();
     }
 
-    // دالة فحص هل يمتلك المستخدم صلاحيات إدارية (Admin أو Manager)
+    // Helper method to check if user holds Admin or Manager privileges
     private static boolean isAdminOrManager(user u) {
         if (u == null || u.getRole() == null) return false;
         String role = u.getRole().toUpperCase();
         return role.contains("ADMIN") || role.contains("MANAGER");
     }
 
-    // طباعة القائمة ديناميكياً بناءً على حالة تسجيل الدخول ودور المستخدم
+    // Dynamic menu rendering based on login status and user role
     private static void printDynamicMenu() {
         System.out.println("\n-------------------------------------------------");
         if (currentUser == null) {
-            System.out.println("👤 الحالة: زائر (Guest) - سجل دخولك لعرض خيارات حسابك");
-            System.out.println("1. [Sprint 1] تسجيل الدخول (User Login)");
-            System.out.println("2. [Sprint 1] عرض المطاعم المتاحة وقائمة الوجبات");
-            System.out.println("0. الخروج من البرنامج");
+            System.out.println("👤 Status: Guest - Please login to view account options");
+            System.out.println("1. [Sprint 1] User Login");
+            System.out.println("2. [Sprint 1] View Available Restaurants & Menu");
+            System.out.println("0. Exit Application");
         } else if (isAdminOrManager(currentUser)) {
-            System.out.println("👑 تم تسجيل الدخول كـ (مدير/مشرف): " + currentUser.getUsername() + " | [Role: " + currentUser.getRole() + "]");
-            System.out.println("1. عرض المطاعم والوجبات");
-            System.out.println("2. [Sprint 3 & 5] تعيين سائق ذكي للطلب (Smart Driver Assignment)");
-            System.out.println("3. [Sprint 4] تحديث حالة الطلب (Order Status Lifecycle)");
-            System.out.println("4. [Sprint 4] تطبيق التسعير الديناميكي (Dynamic Pricing)");
-            System.out.println("5. تسجيل الخروج (Logout)");
-            System.out.println("0. الخروج من البرنامج");
+            System.out.println("👑 Logged in as (Admin/Manager): " + currentUser.getUsername() + " | [Role: " + currentUser.getRole() + "]");
+            System.out.println("1. View Restaurants & Menu");
+            System.out.println("2. [Sprint 3 & 5] Smart Driver Assignment");
+            System.out.println("3. [Sprint 4] Update Order Status Lifecycle");
+            System.out.println("4. [Sprint 4] Apply Dynamic Pricing Strategy");
+            System.out.println("5. Logout");
+            System.out.println("0. Exit Application");
         } else {
-            System.out.println("🛍️ تم تسجيل الدخول كـ (زبون): " + currentUser.getUsername() + " | [Role: " + currentUser.getRole() + "]");
-            System.out.println("1. عرض المطاعم والوجبات المتاحة");
-            System.out.println("2. [Sprint 2 & 5] إنشاء طلب جديد (Place Food Order)");
-            System.out.println("3. [Sprint 4] معاينة تفاصيل وحالة الطلب (View Order Details)");
-            System.out.println("4. [Sprint 4] دفع قيمة الطلب نقداً (Process Payment)");
-            System.out.println("5. [Sprint 2] إلغاء طلب (Cancel Order)");
-            System.out.println("6. تسجيل الخروج (Logout)");
-            System.out.println("0. الخروج من البرنامج");
+            System.out.println("🛍️ Logged in as (Customer): " + currentUser.getUsername() + " | [Role: " + currentUser.getRole() + "]");
+            System.out.println("1. View Available Restaurants & Menu");
+            System.out.println("2. [Sprint 2 & 5] Place Food Order");
+            System.out.println("3. [Sprint 4] View Order Details & Status");
+            System.out.println("4. [Sprint 4] Process Cash Payment");
+            System.out.println("5. [Sprint 2] Cancel Order");
+            System.out.println("6. Logout");
+            System.out.println("0. Exit Application");
         }
         System.out.println("-------------------------------------------------");
     }
@@ -170,22 +170,22 @@ public class Main {
     // ==========================================
     private static void handleLogin() {
         System.out.println("\n--- [Sprint 1: Login] ---");
-        System.out.print("اسم المستخدم (Username): ");
+        System.out.print("Username: ");
         String username = scanner.nextLine().trim();
-        System.out.print("كلمة المرور (Password): ");
+        System.out.print("Password: ");
         String password = scanner.nextLine().trim();
 
         try {
             currentUser = authService.login(username, password);
-            System.out.println("🎉 تم تسجيل الدخول بنجاح! مرحباً بك بصلاحية (" + currentUser.getRole() + ").");
+            System.out.println("🎉 Logged in successfully! Welcome back (" + currentUser.getRole() + ").");
         } catch (Exception e) {
-            System.out.println("❌ فشل تسجيل الدخول: " + e.getMessage());
+            System.out.println("❌ Login failed: " + e.getMessage());
         }
     }
 
     private static void handleLogout() {
         if (currentUser != null) {
-            System.out.println("\n👋 تم تسجيل الخروج بنجاح من حساب: " + currentUser.getUsername());
+            System.out.println("\n👋 Logged out successfully from account: " + currentUser.getUsername());
             currentUser = null;
         }
     }
@@ -193,26 +193,26 @@ public class Main {
     private static void handleViewRestaurantsAndMenu() {
         System.out.println("\n--- [Sprint 1: Restaurant Catalog] ---");
         List<Restaurant> openRestaurants = restaurantRepo.findByIsOpenTrue();
-        System.out.println("المطاعم المفتوحة حالياً:");
+        System.out.println("Currently open restaurants:");
         for (Restaurant r : openRestaurants) {
-            System.out.println(" - [" + r.getId() + "] " + r.getName() + " | المنطقة: " + r.getDeliveryZone() + " | الحد الأدنى للطلب: " + r.getMinimumOrderValue() + " شيكل");
+            System.out.println(" - [" + r.getId() + "] " + r.getName() + " | Zone: " + r.getDeliveryZone() + " | Min Order: $" + r.getMinimumOrderValue());
         }
 
-        System.out.print("\nأدخل رقم المطعم لرؤية المنيو (مثال: 1): ");
+        System.out.print("\nEnter restaurant ID to view menu (e.g., 1): ");
         String restId = scanner.nextLine().trim();
         if (!restId.isEmpty()) {
             try {
                 List<Menu> availableItems = menuService.getRestaurantMenu(restId);
                 if (availableItems.isEmpty()) {
-                    System.out.println("⚠️ لا توجد وجبات متاحة حالياً لهذا المطعم.");
+                    System.out.println("⚠️ No menu items available for this restaurant.");
                 } else {
-                    System.out.println("الوجبات المتاحة في المطعم:");
+                    System.out.println("Available Menu Items:");
                     for (Menu item : availableItems) {
-                        System.out.println("   * [" + item.getId() + "] " + item.getName() + " - " + item.getPrice() + " شيكل");
+                        System.out.println("   * [" + item.getId() + "] " + item.getName() + " - $" + item.getPrice());
                     }
                 }
             } catch (Exception e) {
-                System.out.println("❌ خطأ: " + e.getMessage());
+                System.out.println("❌ Error: " + e.getMessage());
             }
         }
     }
@@ -222,55 +222,54 @@ public class Main {
     // ==========================================
     private static void handlePlaceOrder() {
         System.out.println("\n--- [Sprint 2 & 5: Place Order] ---");
-        System.out.print("أدخل رقم المطعم (المتاح: 1): ");
+        System.out.print("Enter restaurant ID (Available: 1): ");
         String restId = scanner.nextLine().trim();
-        System.out.print("أدخل عنوان التوصيل (مثال: Nablus Center): ");
+        System.out.print("Enter delivery address (e.g., Nablus Center): ");
         String address = scanner.nextLine().trim();
 
-        System.out.println("اختر نوع الطلب (Sprint 5):");
+        System.out.println("Select order type (Sprint 5):");
         System.out.println("1. Standard Order");
-        System.out.println("2. Express Order (رسوم توصيل إضافية)");
-        System.out.println("3. Scheduled Order (طلب موجه لوقت لاحق)");
-        System.out.print("الخيار: ");
+        System.out.println("2. Express Order (Additional delivery fee)");
+        System.out.println("3. Scheduled Order (Future time delivery)");
+        System.out.print("Option: ");
         String typeChoice = scanner.nextLine().trim();
 
-        // 🔴 قراءة وقت التوصيل المستقبلي إذا كان الخيار Scheduled Order (3)
         LocalDateTime scheduledTime = null;
         if ("3".equals(typeChoice) || "SCHEDULED".equalsIgnoreCase(typeChoice)) {
-            System.out.print("أدخل عدد الساعات القادمة لتحديد وقت التوصيل (مثال: 2): ");
+            System.out.print("Enter delivery delay in hours (e.g., 2): ");
             try {
                 int hours = Integer.parseInt(scanner.nextLine().trim());
                 if (hours > 0) {
                     scheduledTime = LocalDateTime.now().plusHours(hours);
                 } else {
-                    scheduledTime = LocalDateTime.now().plusHours(2); // وقت افتراضي إذا أُدخل 0 أو رقم سالب
+                    scheduledTime = LocalDateTime.now().plusHours(2);
                 }
             } catch (NumberFormatException e) {
-                System.out.println("⚠️ رقم غير صحيح، تم اعتماد وقت افتراضي بعد ساعتين.");
+                System.out.println("⚠️ Invalid input, defaulting to 2 hours from now.");
                 scheduledTime = LocalDateTime.now().plusHours(2);
             }
         }
 
         List<Menu> availableItems = menuRepo.findByRestaurantIdAndIsAvailableTrue(restId);
         if (availableItems.isEmpty()) {
-            System.out.println("❌ لا توجد وجبات متاحة لهذا المطعم لإتمام الطلب!");
+            System.out.println("❌ No menu items available at this restaurant to place an order!");
             return;
         }
 
-        System.out.println("الوجبات المتاحة للاختيار:");
+        System.out.println("Available Menu Items:");
         for (Menu item : availableItems) {
-            System.out.println("   * [" + item.getId() + "] " + item.getName() + " - " + item.getPrice() + " شيكل");
+            System.out.println("   * [" + item.getId() + "] " + item.getName() + " - $" + item.getPrice());
         }
 
-        System.out.print("أدخل رقم الوجبة المرادة (مثال: m1 أو m3): ");
+        System.out.print("Enter item ID (e.g., m1 or m3): ");
         String selectedItemId = scanner.nextLine().trim();
-        System.out.print("أدخل الكمية: ");
+        System.out.print("Enter quantity: ");
         
         int qty;
         try {
             qty = Integer.parseInt(scanner.nextLine().trim());
         } catch (NumberFormatException e) {
-            System.out.println("❌ تم رفض الطلب: الكمية يجب أن تكون رقماً صريحاً!");
+            System.out.println("❌ Order rejected: Quantity must be a valid integer!");
             return;
         }
 
@@ -283,7 +282,7 @@ public class Main {
         }
 
         if (selectedMenu == null) {
-            System.out.println("❌ الوجبة غير موجودة أو غير متاحة!");
+            System.out.println("❌ Item not found or unavailable!");
             return;
         }
 
@@ -293,36 +292,35 @@ public class Main {
         try {
             String activeUserId = currentUser.getUsername();
 
-            // 🔴 التعديل هنا: تمرير نوع الطلب (typeChoice) ووقت التوصيل (scheduledTime) لـ OrderService
+            // Creates order via OrderService, triggers observers and sends email
             Order order = orderService.placeOrder(activeUserId, restId, address, items, typeChoice, scheduledTime);
 
-            System.out.println("✅ تم إنشاء الطلب بنجاح للزبون: " + activeUserId);
-            System.out.println("   رقم الطلب (Order ID): " + order.getId());
-            System.out.println("   الحالة الحالية: " + order.getStatus());
-            System.out.println("   الإجمالي النهائي: " + order.getFinalPrice() + " شيكل");
+            System.out.println("✅ Order created successfully for customer: " + activeUserId);
+            System.out.println("   Order ID     : " + order.getId());
+            System.out.println("   Current Status: " + order.getStatus());
+            System.out.println("   Grand Total   : $" + order.getFinalPrice());
         } catch (IllegalArgumentException e) {
-            // 🔴 التقاط رسائل الرفض القادمة من OrderService
-            System.out.println("❌ تم رفض الطلب: " + e.getMessage());
+            System.out.println("❌ Order rejected: " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("❌ فشل إنشاء الطلب: " + e.getMessage());
+            System.out.println("❌ Order creation failed: " + e.getMessage());
         }
     }
 
     private static void handleCancelOrder() {
         System.out.println("\n--- [Sprint 2: Cancel Order] ---");
-        System.out.print("أدخل رقم الطلب للإلغاء: ");
+        System.out.print("Enter order ID to cancel: ");
         String orderId = scanner.nextLine().trim();
 
         try {
             Order order = orderRepo.findById(orderId);
             if (order != null && order.canBeCancelled()) {
                 order.setStatus("CANCELLED");
-                System.out.println("✅ تم إلغاء الطلب بنجاح وتحويل حالته إلى CANCELLED.");
+                System.out.println("✅ Order cancelled successfully and status changed to CANCELLED.");
             } else {
-                System.out.println("❌ لا يمكن إلغاء الطلب الحالي (الحالة غير مسموحة للإلغاء).");
+                System.out.println("❌ Order cannot be cancelled in its current state.");
             }
         } catch (Exception e) {
-            System.out.println("❌ لا يمكن إلغاء الطلب: " + e.getMessage());
+            System.out.println("❌ Order cancellation failed: " + e.getMessage());
         }
     }
 
@@ -331,19 +329,19 @@ public class Main {
     // ==========================================
     private static void handleAssignDriver() {
         System.out.println("\n--- [Sprint 3 & 5: Smart Driver Assignment] ---");
-        System.out.print("أدخل رقم الطلب لتعيين سائق له: ");
+        System.out.print("Enter order ID for driver assignment: ");
         String orderId = scanner.nextLine().trim();
 
         Order order = orderRepo.findById(orderId);
         if (order == null) {
-            System.out.println("❌ لم يتم العثور على الطلب ورقم الـ ID غير موجود!");
+            System.out.println("❌ Order ID not found!");
             return;
         }
 
-        System.out.println("اختر استراتيجية تعيين السائق (Strategy Pattern):");
-        System.out.println("1. Nearest Driver (أقرب سائق)");
-        System.out.println("2. Fastest Driver (أسرع سائق)");
-        System.out.print("الخيار: ");
+        System.out.println("Select driver assignment strategy (Strategy Pattern):");
+        System.out.println("1. Nearest Driver");
+        System.out.println("2. Fastest Driver");
+        System.out.print("Option: ");
         String stratChoice = scanner.nextLine().trim();
 
         if ("2".equals(stratChoice)) {
@@ -353,7 +351,6 @@ public class Main {
         }
 
         try {
-            // 1. حساب حجم الطلب تلقائياً من الوجبات
             int orderSize = 0;
             if (order.getItems() != null) {
                 for (OrderItem item : order.getItems()) {
@@ -361,27 +358,25 @@ public class Main {
                 }
             }
 
-            // 2. حساب مسافة التوصيل التقريبية
-            double deliveryDistance = 2.5; // قيمة افتراضية
+            double deliveryDistance = 2.5;
             if (order.getDeliveryFee() != null && order.getDeliveryFee().doubleValue() > 0) {
                 double baseFee = order.getDeliveryFee().doubleValue();
                 if (order instanceof ExpressOrder) {
-                    baseFee -= 5.0; // خصم رسوم التوصيل السريع للحصول على التكلفة الأصلية
+                    baseFee -= 5.0;
                 }
-                deliveryDistance = baseFee / 2.0; // المعادلة الأصلية لحساب المسافة
+                deliveryDistance = baseFee / 2.0;
             }
 
-            // 3. التعيين المتعدد الأشكال (US5.4) بحساب أهلية المركبة
             Driver assignedDriver = driverService.assignDriver(order, deliveryDistance, orderSize);
             
             System.out.println("=================================================");
-            System.out.println("✅ تم تعيين السائق بنجاح!");
-            System.out.println("   اسم السائق        : " + assignedDriver.getName());
-            System.out.println("   نوع المركبة/السائق: " + assignedDriver.getDriverType()); // 🟢 طباعة نوع المركبة
-            System.out.println("   حالة السائق الآن  : " + assignedDriver.getStatus());
+            System.out.println("✅ Driver assigned successfully!");
+            System.out.println("   Driver Name  : " + assignedDriver.getName());
+            System.out.println("   Driver Type  : " + assignedDriver.getDriverType());
+            System.out.println("   Driver Status: " + assignedDriver.getStatus());
             System.out.println("=================================================");
         } catch (Exception e) {
-            System.out.println("❌ فشل تعيين السائق: " + e.getMessage());
+            System.out.println("❌ Driver assignment failed: " + e.getMessage());
         }
     }
 
@@ -390,22 +385,22 @@ public class Main {
     // ==========================================
     private static void handleUpdateOrderStatus() {
         System.out.println("\n--- [Sprint 4: Order Status Transitions] ---");
-        System.out.print("أدخل رقم الطلب: ");
+        System.out.print("Enter order ID: ");
         String orderId = scanner.nextLine().trim();
 
-        System.out.println("اختر الحالة الجديدة للطلب:");
+        System.out.println("Select new order status:");
         System.out.println("1. CONFIRMED");
         System.out.println("2. PREPARING");
         System.out.println("3. READY");
         System.out.println("4. OUT_FOR_DELIVERY");
         System.out.println("5. DELIVERED");
-        System.out.print("الخيار: ");
+        System.out.print("Option: ");
         
         int choice;
         try {
             choice = Integer.parseInt(scanner.nextLine().trim());
         } catch (NumberFormatException e) {
-            System.out.println("❌ خيار غير صحيح!");
+            System.out.println("❌ Invalid option!");
             return;
         }
 
@@ -413,32 +408,33 @@ public class Main {
 
         if (choice >= 1 && choice <= 5) {
             try {
+                // Updates status, notifies observers, and triggers email service
                 orderService.updateOrderStatus(orderId, statuses[choice - 1]);
-                System.out.println("✅ تم تحديث حالة الطلب إلى: " + statuses[choice - 1]);
-                System.out.println("📢 (تم إشعار المراقبين Observer Pattern بنجاح)");
+                System.out.println("✅ Order status updated to: " + statuses[choice - 1]);
+                System.out.println("📢 (Observers notified & status update email dispatched successfully)");
             } catch (Exception e) {
-                System.out.println("❌ الانتقال للحالة غير مسموح: " + e.getMessage());
+                System.out.println("❌ Status transition not allowed: " + e.getMessage());
             }
         }
     }
 
     private static void handleCalculatePricing() {
         System.out.println("\n--- [Sprint 4: Dynamic Pricing & Apply Strategy] ---");
-        System.out.print("أدخل رقم الطلب لتطبيق خطة التسعير عليه: ");
+        System.out.print("Enter order ID to apply pricing strategy: ");
         String orderId = scanner.nextLine().trim();
 
         Order order = orderRepo.findById(orderId);
         if (order == null) {
-            System.out.println("❌ لم يتم العثور على الطلب!");
+            System.out.println("❌ Order not found!");
             return;
         }
 
-        System.out.println("\nاختر استراتيجية التسعير المراد تطبيقها (Strategy Pattern):");
-        System.out.println("1. Normal Pricing (تسعير عادي)");
-        System.out.println("2. Peak-Hour Pricing (ساعات الذروة - إضافة 15%)");
-        System.out.println("3. Express Delivery Pricing (توصيل سريع - إضافة 5 شيكل)");
-        System.out.println("4. Promotional Pricing (خصم ترويجي - 10%)");
-        System.out.print("الخيار: ");
+        System.out.println("\nSelect pricing strategy (Strategy Pattern):");
+        System.out.println("1. Normal Pricing");
+        System.out.println("2. Peak-Hour Pricing (+15% surcharge)");
+        System.out.println("3. Express Delivery Pricing (+$5.00 surcharge)");
+        System.out.println("4. Promotional Pricing (10% discount)");
+        System.out.print("Option: ");
         String pChoice = scanner.nextLine().trim();
 
         PricingStrategy strategy;
@@ -462,9 +458,9 @@ public class Main {
         try {
             BigDecimal finalPrice = pricingService.applyPricing(order);
             System.out.println("-------------------------------------------------");
-            System.out.println("💰 المجموع النهائي الجديد للطلب بعد تطبيق الاستراتيجية: " + finalPrice + " شيكل");
+            System.out.println("💰 Updated grand total after strategy application: $" + finalPrice);
         } catch (Exception e) {
-            System.out.println("❌ تعذر حساب التسعير: " + e.getMessage());
+            System.out.println("❌ Pricing calculation failed: " + e.getMessage());
         }
     }
 
@@ -473,45 +469,45 @@ public class Main {
     // ==========================================
     private static void handleViewOrderDetails() {
         System.out.println("\n--- [Sprint 4: View Order Details] ---");
-        System.out.print("أدخل رقم الطلب لمعاينة تفاصيله: ");
+        System.out.print("Enter order ID to inspect details: ");
         String orderId = scanner.nextLine().trim();
 
         Order order = orderRepo.findById(orderId);
         if (order == null) {
-            System.out.println("❌ لم يتم العثور على الطلب!");
+            System.out.println("❌ Order not found!");
             return;
         }
 
         System.out.println("=================================================");
-        System.out.println("📋 تفاصيل الطلب (Order Details):");
-        System.out.println(" - رقم الطلب (Order ID)   : " + order.getId());
-        System.out.println(" - صاحب الطلب (Customer)  : " + order.getUserId());
-        System.out.println(" - حالة الطلب الحالية     : " + order.getStatus());
-        System.out.println(" - حالة الدفع             : " + order.getPaymentStatus());
-        System.out.println(" - المجموع النهائي       : " + order.getFinalPrice() + " شيكل");
+        System.out.println("📋 Order Details:");
+        System.out.println(" - Order ID      : " + order.getId());
+        System.out.println(" - Customer ID   : " + order.getUserId());
+        System.out.println(" - Current Status: " + order.getStatus());
+        System.out.println(" - Payment Status: " + order.getPaymentStatus());
+        System.out.println(" - Grand Total   : $" + order.getFinalPrice());
         System.out.println("=================================================");
     } 
 
     private static void handleProcessPayment() {
         System.out.println("\n--- [Sprint 4: Process Cash Payment] ---");
-        System.out.print("أدخل رقم الطلب للدفع: ");
+        System.out.print("Enter order ID to process payment: ");
         String orderId = scanner.nextLine().trim();
 
         Order order = orderRepo.findById(orderId);
         if (order == null) {
-            System.out.println("❌ لم يتم العثور على الطلب!");
+            System.out.println("❌ Order not found!");
             return;
         }
 
-        System.out.print("أدخل المبلغ المدفوع نقداً: ");
+        System.out.print("Enter cash amount paid: ");
         BigDecimal amountPaid = new BigDecimal(scanner.nextLine().trim());
 
         try {
             String resultMessage = paymentService.processCashPayment(order, amountPaid);
             System.out.println("✅ " + resultMessage);
-            System.out.println("   حالة الدفع الحالية للطلب: " + order.getPaymentStatus());
+            System.out.println("   Current payment status: " + order.getPaymentStatus());
         } catch (Exception e) {
-            System.out.println("❌ عملية الدفع مرفوضة: " + e.getMessage());
+            System.out.println("❌ Payment process rejected: " + e.getMessage());
         }
     }
 }
