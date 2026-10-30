@@ -6,7 +6,7 @@ import java.util.Properties;
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class EmailService {
-
+ 
     private final String username; 
     private final String password;
 
