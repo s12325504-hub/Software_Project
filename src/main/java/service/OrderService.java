@@ -1,3 +1,4 @@
+
 package service;
 
 import domain.ExpressOrder;
@@ -16,15 +17,33 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Provides order placement, status updates, and delivery cost calculation.
+ * Supports regular, express, and scheduled orders, as well as notifications.
+ */
 public class OrderService {
 
+    /** Stores and retrieves orders. */
     private final OrderRepository orderRepository;
+
+    /** Retrieves restaurants and their delivery rules. */
     private final RestaurantRepository restaurantRepository;
+
+    /** Provides notifications to registered order observers. */
     private final NotificationService notificationService;
+
+    /** Calculates order delivery fees. */
     private final DeliveryCostService deliveryCostService;
+
+    /** Sends order confirmation and status update emails. */
     private final EmailService emailService;
 
-    // Retains backwards compatibility with previous constructors
+    /**
+     * Creates a service using default notification and delivery cost services.
+     *
+     * @param orderRepository order storage
+     * @param restaurantRepository restaurant lookup
+     */
     public OrderService(OrderRepository orderRepository,
                         RestaurantRepository restaurantRepository) {
 
@@ -34,7 +53,13 @@ public class OrderService {
              new DeliveryCostService());
     }
 
-    // Useful for notification unit tests using Mockito
+    /**
+     * Creates a service with a custom notification service.
+     *
+     * @param orderRepository order storage
+     * @param restaurantRepository restaurant lookup
+     * @param notificationService notification implementation
+     */
     public OrderService(OrderRepository orderRepository,
                         RestaurantRepository restaurantRepository,
                         NotificationService notificationService) {
@@ -45,6 +70,14 @@ public class OrderService {
              new DeliveryCostService());
     }
 
+    /**
+     * Creates a service with custom notification and delivery cost services.
+     *
+     * @param orderRepository order storage
+     * @param restaurantRepository restaurant lookup
+     * @param notificationService notification implementation
+     * @param deliveryCostService delivery fee calculator
+     */
     public OrderService(OrderRepository orderRepository,
                         RestaurantRepository restaurantRepository,
                         NotificationService notificationService,
@@ -57,7 +90,15 @@ public class OrderService {
              new EmailService());
     }
 
-    // 🟢 المشيّد المطلوب لإصلاح الخطأ والسماح بتمشية الـ Mock
+    /**
+     * Creates a service with all required dependencies supplied.
+     *
+     * @param orderRepository order storage
+     * @param restaurantRepository restaurant lookup
+     * @param notificationService notification implementation
+     * @param deliveryCostService delivery fee calculator
+     * @param emailService email sender
+     */
     public OrderService(OrderRepository orderRepository,
                         RestaurantRepository restaurantRepository,
                         NotificationService notificationService,
@@ -71,7 +112,16 @@ public class OrderService {
         this.emailService = emailService;
     }
 
-    // Default placeOrder method for backwards compatibility
+    /**
+     * Places a regular order using the default order type.
+     *
+     * @param customerId ID of the customer
+     * @param restaurantId ID of the restaurant
+     * @param deliveryAddress delivery destination
+     * @param items items to order
+     * @return the saved order
+     * @throws IllegalArgumentException if the order data is invalid
+     */
     public Order placeOrder(String customerId,
                             String restaurantId,
                             String deliveryAddress,
@@ -80,7 +130,17 @@ public class OrderService {
         return placeOrder(customerId, restaurantId, deliveryAddress, items, "1", null);
     }
 
-    // Method supporting order type without explicit scheduled time
+    /**
+     * Places an order of the requested type without an explicit scheduled time.
+     *
+     * @param customerId ID of the customer
+     * @param restaurantId ID of the restaurant
+     * @param deliveryAddress delivery destination
+     * @param items items to order
+     * @param orderType regular, express, or scheduled order selection
+     * @return the saved order
+     * @throws IllegalArgumentException if the order data is invalid
+     */
     public Order placeOrder(String customerId,
                             String restaurantId,
                             String deliveryAddress,
@@ -90,7 +150,18 @@ public class OrderService {
         return placeOrder(customerId, restaurantId, deliveryAddress, items, orderType, null);
     }
 
-    // Full placeOrder method supporting order type and scheduled time
+    /**
+     * Validates and saves a regular, express, or scheduled order and sends notifications.
+     *
+     * @param customerId ID of the customer
+     * @param restaurantId ID of the restaurant
+     * @param deliveryAddress delivery destination
+     * @param items items to order
+     * @param orderType regular, express, or scheduled order selection
+     * @param scheduledTime requested delivery time for a scheduled order; may be null
+     * @return the saved order
+     * @throws IllegalArgumentException if validation fails
+     */
     public Order placeOrder(String customerId,
                             String restaurantId,
                             String deliveryAddress,
@@ -162,7 +233,7 @@ public class OrderService {
                     restaurantId,
                     items,
                     totalAmount,
-                    new BigDecimal("5.00") // Additional Express fee
+                    new BigDecimal("5.00")
             );
         } else if ("3".equals(type) || "SCHEDULED".equalsIgnoreCase(type)) {
             LocalDateTime deliveryTime = (scheduledTime != null) ? scheduledTime : LocalDateTime.now().plusHours(2);
@@ -216,6 +287,15 @@ public class OrderService {
         return savedOrder;
     }
 
+    /**
+     * Moves an order to the next permitted status and attempts an email notification.
+     *
+     * @param orderId ID of the order
+     * @param newStatus requested new status
+     * @return the updated order
+     * @throws IllegalArgumentException if the order or status is invalid
+     * @throws IllegalStateException if the transition is not allowed
+     */
     public Order updateOrderStatus(String orderId, String newStatus) {
 
         Order order = orderRepository.findById(orderId);
@@ -254,6 +334,13 @@ public class OrderService {
         return order;
     }
 
+    /**
+     * Checks whether the requested status follows the allowed order lifecycle.
+     *
+     * @param currentStatus current order status
+     * @param newStatus proposed next status
+     * @return true if the transition is allowed; otherwise false
+     */
     private boolean isValidStatusTransition(String currentStatus,
                                             String newStatus) {
 
@@ -280,7 +367,14 @@ public class OrderService {
         return false;
     }
 
-    // Calculates and sets delivery fee for an order
+    /**
+     * Calculates and assigns the delivery fee for an existing order.
+     *
+     * @param orderId ID of the order
+     * @param distance delivery distance used by the calculator
+     * @return the calculated delivery fee
+     * @throws IllegalArgumentException if the order does not exist
+     */
     public BigDecimal calculateDeliveryCost(String orderId,
                                             double distance) {
 

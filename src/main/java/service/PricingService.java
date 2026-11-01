@@ -1,3 +1,4 @@
+
 package service;
 
 import java.math.BigDecimal;
@@ -19,10 +20,19 @@ public class PricingService {
             throw new IllegalArgumentException("Order cannot be null");
         }
 
-        BigDecimal basePrice = order.getFinalPrice();
+        if (pricingStrategy == null) {
+            throw new IllegalStateException("Pricing strategy cannot be null");
+        }
 
-        BigDecimal newPrice =
-                pricingStrategy.calculatePrice(basePrice);
+        // Always calculate from the original order total and delivery fee.
+        // This prevents discounts and surcharges from accumulating.
+        BigDecimal basePrice = order.getTotalPrice();
+
+        if (order.getDeliveryFee() != null) {
+            basePrice = basePrice.add(order.getDeliveryFee());
+        }
+
+        BigDecimal newPrice = pricingStrategy.calculatePrice(basePrice);
 
         order.setFinalPrice(newPrice);
 
@@ -30,6 +40,11 @@ public class PricingService {
     }
 
     public void setPricingStrategy(PricingStrategy pricingStrategy) {
+
+        if (pricingStrategy == null) {
+            throw new IllegalArgumentException("Pricing strategy cannot be null");
+        }
+
         this.pricingStrategy = pricingStrategy;
     }
 }
